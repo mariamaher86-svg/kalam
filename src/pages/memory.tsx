@@ -12,18 +12,25 @@ export function WordsPage() {
   const batch = fresh.slice(0, remaining || 5);
   const [en, setEn] = useState('');
   const [ar, setAr] = useState('');
+  const [msg, setMsg] = useState('');
   const matches = findWords(allWords(s), en);
   const sameMeaning = matches.some((w) => w.ar === ar.trim());
 
   const add = () => {
     const word = en.trim().replace(/\s+/g, ' ');
-    if (!word || !ar.trim() || sameMeaning) return;
+    if (!word) return setMsg('اكتبي الكلمة بالإنجليزي الأول.');
+    if (!ar.trim()) return setMsg('اكتبي المعنى بالعربي عشان الكلمة تتضاف.');
+    if (sameMeaning) return setMsg('الكلمة دي موجودة بنفس المعنى، فمش هتتكرر.');
     // a new meaning of a word we already have gets its own card
     const id = `w:${word.toLowerCase()}${matches.length ? `#${ar.trim()}` : ''}`;
     update((st) => ({ customWords: [...st.customWords, { id, en: word, ar: ar.trim() }] }));
     addToReview([id]);
     setEn('');
     setAr('');
+    setMsg(`اتضافت "${word}" ✅ ودخلت المراجعة.`);
+  };
+  const onEnter = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') add();
   };
 
   return (
@@ -39,7 +46,7 @@ export function WordsPage() {
         : <p className="muted">خلصتي كل الكلمات! ضيفي كلماتك من تحت.</p>}
       <h2>ضيفي كلمة من عندك</h2>
       <div className="card form">
-        <input dir="ltr" placeholder="English" value={en} onChange={(e) => setEn(e.target.value)} />
+        <input dir="ltr" placeholder="English" value={en} onKeyDown={onEnter} onChange={(e) => { setEn(e.target.value); setMsg(''); }} />
         {matches.length > 0 && (
           <div className="feedback close">
             <b>الكلمة دي موجودة في التطبيق ✅</b>
@@ -54,10 +61,18 @@ export function WordsPage() {
             <small>لو تقصدي معنى تاني، اكتبيه تحت.</small>
           </div>
         )}
-        <input placeholder="المعنى بالعربي" value={ar} onChange={(e) => setAr(e.target.value)} />
-        {sameMeaning && <small className="muted">بنفس المعنى ده موجودة، مش هتتكرر.</small>}
-        <button disabled={!en.trim() || !ar.trim() || sameMeaning} onClick={add}>{matches.length ? 'إضافة كمعنى تاني' : 'إضافة'}</button>
+        <input placeholder="المعنى بالعربي" value={ar} onKeyDown={onEnter} onChange={(e) => { setAr(e.target.value); setMsg(''); }} />
+        <button className="primary" onClick={add}>{matches.length ? 'إضافة كمعنى تاني' : 'إضافة'}</button>
+        {msg && <p role="status" className="good-note">{msg}</p>}
       </div>
+      {s.customWords.length > 0 && (
+        <>
+          <h2>كلماتي ({s.customWords.length})</h2>
+          {[...s.customWords].reverse().map((w) => (
+            <div key={w.id} className="card row"><span dir="ltr"><Say text={w.en} /> <b>{w.en}</b></span><span>{w.ar}</span></div>
+          ))}
+        </>
+      )}
     </>
   );
 }
