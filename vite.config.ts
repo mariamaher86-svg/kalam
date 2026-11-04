@@ -4,7 +4,11 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 import { readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-/** After the build: write dist/sw.js that precaches every built file, so the app works offline. */
+/**
+ * After the build: write dist/sw.js that precaches every built file, so the app works offline.
+ * Precaching bypasses the HTTP cache and pages come from the network first: GitHub Pages lets browsers
+ * keep index.html for 10 minutes, and an old index.html points at script files a new deploy has deleted.
+ */
 function offline(): Plugin {
   let outDir = 'dist';
   return {
@@ -20,9 +24,9 @@ function offline(): Plugin {
       writeFileSync(
         join(outDir, 'sw.js'),
         `const C=${JSON.stringify(cache)},L=${JSON.stringify(list)};
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(L)))});
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(L.map(u=>new Request(u,{cache:'reload'})))))});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>{if(e.request.method==='GET')e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(r=>r||fetch(e.request)))});`,
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;if(e.request.mode==='navigate'){e.respondWith(fetch(e.request.url,{cache:'no-cache'}).then(r=>r.ok?r:caches.match('./').then(c=>c||r)).catch(()=>caches.match('./')));return}e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(r=>r||fetch(e.request)))});`,
       );
     },
   };

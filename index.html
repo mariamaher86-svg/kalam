@@ -14,6 +14,15 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // if the app's script file is missing, reload once instead of staying on a blank screen
+      addEventListener('error', function (e) {
+        if (e.target && e.target.tagName === 'SCRIPT' && !sessionStorage.getItem('kalam-reloaded')) {
+          sessionStorage.setItem('kalam-reloaded', '1');
+          location.reload();
+        }
+      }, true);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
