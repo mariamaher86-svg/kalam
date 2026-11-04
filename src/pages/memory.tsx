@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { dayStr, parseImport, shuffle } from '../lib/core';
+import { dayStr, findWords, parseImport, shuffle } from '../lib/core';
 import { addToReview, allSentences, allWords, dueCards, gradeCard, learnWords, reachedLessons, update, useStore } from '../lib/store';
 import { sentenceGroups } from '../content/sentences';
 import { En, Say } from './Quiz';
@@ -12,11 +12,15 @@ export function WordsPage() {
   const batch = fresh.slice(0, remaining || 5);
   const [en, setEn] = useState('');
   const [ar, setAr] = useState('');
+  const matches = findWords(allWords(s), en);
+  const sameMeaning = matches.some((w) => w.ar === ar.trim());
 
   const add = () => {
-    const id = `w:${en.trim().toLowerCase()}`;
-    if (!en.trim() || !ar.trim() || allWords(s).some((w) => w.id === id)) return;
-    update((st) => ({ customWords: [...st.customWords, { id, en: en.trim(), ar: ar.trim() }] }));
+    const word = en.trim().replace(/\s+/g, ' ');
+    if (!word || !ar.trim() || sameMeaning) return;
+    // a new meaning of a word we already have gets its own card
+    const id = `w:${word.toLowerCase()}${matches.length ? `#${ar.trim()}` : ''}`;
+    update((st) => ({ customWords: [...st.customWords, { id, en: word, ar: ar.trim() }] }));
     addToReview([id]);
     setEn('');
     setAr('');
@@ -36,8 +40,23 @@ export function WordsPage() {
       <h2>ضيفي كلمة من عندك</h2>
       <div className="card form">
         <input dir="ltr" placeholder="English" value={en} onChange={(e) => setEn(e.target.value)} />
+        {matches.length > 0 && (
+          <div className="feedback close">
+            <b>الكلمة دي موجودة في التطبيق ✅</b>
+            {matches.map((w) => (
+              <div key={w.id} className="row">
+                <span><Say text={w.en} /> {w.ar}</span>
+                {s.cards[w.id]
+                  ? <small>بتحفظيها</small>
+                  : <button onClick={() => addToReview([w.id])}>ضيفيها للمراجعة</button>}
+              </div>
+            ))}
+            <small>لو تقصدي معنى تاني، اكتبيه تحت.</small>
+          </div>
+        )}
         <input placeholder="المعنى بالعربي" value={ar} onChange={(e) => setAr(e.target.value)} />
-        <button onClick={add}>إضافة</button>
+        {sameMeaning && <small className="muted">بنفس المعنى ده موجودة، مش هتتكرر.</small>}
+        <button disabled={!en.trim() || !ar.trim() || sameMeaning} onClick={add}>{matches.length ? 'إضافة كمعنى تاني' : 'إضافة'}</button>
       </div>
     </>
   );

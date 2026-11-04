@@ -17,6 +17,8 @@ export type State = {
   activeDays: string[];
   planDone: number[];
   exams: { day: string; score: number }[];
+  /** times she practised speaking into the microphone */
+  spoken: number;
   customWords: Word[];
   customSentences: Sentence[];
   intro: Intro;
@@ -33,6 +35,7 @@ const initial = (): State => ({
   activeDays: [],
   planDone: [],
   exams: [],
+  spoken: 0,
   customWords: [],
   customSentences: [],
   intro: { name: '', age: '', city: 'Cairo', company: '', years: '', family: '', hobby: 'reading', goal: 'speak English fluently at work' },
@@ -103,6 +106,8 @@ export function learnWords(ids: string[]) {
   const today = dayStr();
   update((s) => ({ learnedByDay: { ...s.learnedByDay, [today]: (s.learnedByDay[today] ?? 0) + ids.length } }));
 }
+
+export const recordSpeech = () => update((s) => ({ spoken: s.spoken + 1 }));
 
 export function recordAnswers(results: { lesson: string; right: boolean }[]) {
   update((s) => {

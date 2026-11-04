@@ -61,8 +61,21 @@ export function Quiz({ questions, onDone }: { questions: Question[]; onDone: (r:
         </>
       ) : (
         <>
-          <p className="muted">اكتبي بالإنجليزي:</p>
-          <p className="prompt">{q.prompt}</p>
+          {q.kind === 'write' ? (
+            <>
+              <p className="muted">اكتبي بالإنجليزي:</p>
+              <p className="prompt">{q.prompt}</p>
+            </>
+          ) : (
+            <>
+              <p className="muted">اسمعي واكتبي اللي سمعتيه:</p>
+              <div className="actions">
+                <button className="primary" onClick={() => speak(q.answer)}>🔊 اسمعي</button>
+                <button onClick={() => speak(q.answer, 0.6)}>🐢 أبطأ</button>
+              </div>
+              {answered && <p className="prompt">{q.prompt}</p>}
+            </>
+          )}
           <textarea
             dir="ltr"
             rows={2}

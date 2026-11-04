@@ -1,3 +1,7 @@
+import { wordsCore } from './wordsCore';
+import { wordsLife } from './wordsLife';
+import { wordsWork } from './wordsWork';
+
 export type Word = { id: string; en: string; ar: string };
 
 const raw = `hello|أهلًا
@@ -136,7 +140,18 @@ agree|يوافق
 suggest|يقترح
 decide|يقرر`;
 
-export const words: Word[] = raw.split('\n').map((l) => {
-  const [en, ar] = l.split('|');
-  return { id: `w:${en}`, en, ar };
+// the original 135 words stay first so existing progress keeps its order; repeats across lists are dropped
+const seen = new Set<string>();
+const lines = [raw, wordsCore, wordsLife, wordsWork].join('\n').split('\n').filter((l) => {
+  const en = l.split('|')[0];
+  if (!l.trim() || seen.has(en)) return false;
+  seen.add(en);
+  return true;
+});
+
+export const words: Word[] = lines.map((l) => {
+  // "word#sense" keeps two meanings of one word apart; only "word" is shown and spoken
+  const [key, ar] = l.split('|');
+  const en = key.split('#')[0];
+  return { id: `w:${key}`, en, ar };
 });

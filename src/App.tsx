@@ -3,6 +3,7 @@ import { Home, Practice, Progress } from './pages/main';
 import { LessonPage, LessonsPage } from './pages/lessons';
 import { ReviewPage, SentencesPage, WordsPage } from './pages/memory';
 import { ExamPage, IntroPage, PlanPage, WritingPage } from './pages/skills';
+import { ListenPage, ShadowPage, SituationPage, SituationsPage, SpeakPage } from './pages/speaking';
 
 const route = () => location.hash.replace(/^#\/?/, '').split('/');
 export const go = (path: string) => {
@@ -40,6 +41,11 @@ export function App() {
     exam: <ExamPage />,
     plan: <PlanPage />,
     intro: <IntroPage />,
+    speak: <SpeakPage />,
+    shadow: <ShadowPage />,
+    listen: <ListenPage />,
+    situations: <SituationsPage />,
+    situation: <SituationPage key={arg} id={arg} />,
   };
   return (
     <>

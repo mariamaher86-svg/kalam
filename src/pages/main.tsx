@@ -44,6 +44,10 @@ export function Practice() {
     ['sentences', '💬', 'الجمل', 'أكتر من 1000 جملة، وضيفي كتابك'],
     ['writing', '✍️', 'الكتابة والتصحيح', 'جمل عربي على قد مرحلتك'],
     ['exam', '📝', 'امتحان عشوائي', 'ويقولك ضعيفة في إيه'],
+    ['speak', '🗣️', 'كلام يومي', 'سؤال كل يوم تجاوبيه بصوتك'],
+    ['shadow', '🦜', 'تقليد النطق', 'اسمعي الجملة وقوليها زيها'],
+    ['listen', '🎧', 'استماع وكتابة', 'اسمعي الجملة واكتبيها'],
+    ['situations', '🎭', 'مواقف جاهزة', 'الاجتماع والـ stand-up والمقابلة وغيرهم'],
     ['intro', '🎤', 'عرّفي نفسك', 'جهزي تعريفك واتمرني بالصوت'],
     ['plan', '🗓️', 'خطة الأسبوعين', '14 يوم لحد ما تعرّفي نفسك'],
   ];
@@ -73,6 +77,8 @@ export function Progress() {
     ['ثبتت في الذاكرة', mastered],
     ['أيام ورا بعض', streak(s.activeDays, dayStr())],
     ['أيام الخطة', `${s.planDone.length} / 14`],
+    ['مرات الكلام', s.spoken],
+    ['آخر امتحان', s.exams.length ? `${s.exams[s.exams.length - 1].score}%` : '—'],
   ];
   const weak = weakLessons(s);
   const last = s.exams.slice(-5);
@@ -108,7 +114,7 @@ export function Progress() {
       <div className="card row">
         <span>كلمات جديدة كل يوم</span>
         <select value={s.dailyGoal} onChange={(e) => update(() => ({ dailyGoal: Number(e.target.value) }))}>
-          {[3, 5, 8, 10, 15].map((n) => <option key={n}>{n}</option>)}
+          {[3, 5, 8, 10, 15, 20, 30].map((n) => <option key={n}>{n}</option>)}
         </select>
       </div>
       <div className="card">

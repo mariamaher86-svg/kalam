@@ -35,6 +35,19 @@ export function checkAnswer(input: string, answer: string): Check {
   return { result: d === 0 ? 'right' : d <= 2 && n.length > 3 ? 'close' : 'wrong', best, diff };
 }
 
+/** Share of the target sentence's words that were heard, 0 to 100. */
+export function matchPct(heard: string, target: string): number {
+  const { diff } = checkAnswer(heard, target);
+  return Math.round((diff.filter((d) => d.ok).length / diff.length) * 100);
+}
+
+/** Every entry of a word, ignoring case and extra spaces. A word can have several meanings. */
+export function findWords<T extends { en: string }>(list: T[], text: string): T[] {
+  const clean = (s: string) => s.trim().replace(/\s+/g, ' ').toLowerCase();
+  const wanted = clean(text);
+  return wanted ? list.filter((w) => clean(w.en) === wanted) : [];
+}
+
 export type Card = { box: number; due: string };
 const INTERVALS = [1, 2, 4, 7, 15, 30];
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, checkAnswer, grade, normalize, parseImport, streak } from './core';
+import { addDays, checkAnswer, findWords, grade, matchPct, normalize, parseImport, streak } from './core';
+import { prompts, situations } from '../content/speaking';
 import { details } from '../content/details';
 import { lessons } from '../content/grammar';
 import { sentences } from '../content/sentences';
@@ -27,6 +28,15 @@ describe('spaced repetition', () => {
     const b = grade(a, true, '2026-01-31');
     expect(b).toEqual({ box: 1, due: '2026-02-02' });
     expect(grade(b, false, '2026-02-02').box).toBe(0);
+  });
+});
+
+describe('findWords', () => {
+  it('finds a word whatever the case or spacing, including its other meanings', () => {
+    expect(findWords(words, '  BOOK ').map((w) => w.ar).sort()).toEqual(['كتاب', 'يحجز'].sort());
+    expect(findWords(words, 'pull   request')).toHaveLength(1);
+    expect(findWords(words, 'zzzz')).toHaveLength(0);
+    expect(findWords(words, '  ')).toHaveLength(0);
   });
 });
 
@@ -63,5 +73,12 @@ describe('content', () => {
     expect(plan).toHaveLength(14);
     for (const d of plan) for (const id of d.lessons) expect(ids.has(id), id).toBe(true);
     expect(new Set(words.map((w) => w.id)).size).toBe(words.length);
+    console.log(`words: ${words.length}`);
+    for (const w of words) expect(w.en && w.ar, w.id).toBeTruthy();
+    expect(words[0].en).toBe('hello');
+    expect(words[134].en).toBe('decide');
+    expect(matchPct('i am a developer', 'I am a software developer.')).toBe(80);
+    expect(situations.every((x) => x.lines.some((l) => l[0] === 'you'))).toBe(true);
+    expect(prompts.length).toBeGreaterThanOrEqual(30);
   });
 });
