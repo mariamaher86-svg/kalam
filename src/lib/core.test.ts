@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, checkAnswer, grade, normalize, parseImport, streak } from './core';
+import { details } from '../content/details';
 import { lessons } from '../content/grammar';
 import { sentences } from '../content/sentences';
 import { plan } from '../content/plan';
@@ -54,6 +55,10 @@ describe('content', () => {
       expect(l.quiz.length, l.id).toBeGreaterThanOrEqual(3);
       for (const q of l.quiz) expect(new Set(q.slice(1)).size, q[0]).toBe(3);
       expect(l.en && l.ar, l.id).toBeTruthy();
+      const d = details[l.id];
+      expect(d, l.id).toBeTruthy();
+      expect(d.rules.length && d.mistakes.length && d.en.length, l.id).toBeGreaterThan(0);
+      for (const row of d.table ?? []) expect(row.length, `${l.id}: ${row[0]}`).toBe(d.table![0].length);
     }
     expect(plan).toHaveLength(14);
     for (const d of plan) for (const id of d.lessons) expect(ids.has(id), id).toBe(true);

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { details } from '../content/details';
 import { lessonById, lessons, type Level } from '../content/grammar';
 import { quizOf } from '../lib/questions';
 import { currentIndex, PASS, recordAnswers, update, useStore } from '../lib/store';
@@ -35,6 +36,7 @@ export function LessonPage({ id }: { id: string }) {
   const [questions, setQuestions] = useState<ReturnType<typeof quizOf> | null>(null);
   const [score, setScore] = useState<number | null>(null);
   if (!lesson) return <p>الدرس مش موجود.</p>;
+  const detail = details[lesson.id];
   const nextLesson = lessons[lessons.indexOf(lesson) + 1];
 
   return (
@@ -62,8 +64,33 @@ export function LessonPage({ id }: { id: string }) {
         />
       ) : (
         <>
-          <div className="card"><h3>الشرح بالعربي</h3><p><Mixed text={lesson.ar} /></p></div>
-          <div className="card" dir="ltr"><h3>In English</h3><p>{lesson.en}</p></div>
+          <div className="card">
+            <h3>الشرح بالعربي</h3>
+            <ol className="rules">{detail.rules.map((r) => <li key={r}><Mixed text={r} /></li>)}</ol>
+          </div>
+          {detail.table && (
+            <div className="card">
+              <h3>الجدول</h3>
+              <table>
+                <thead><tr>{detail.table[0].map((c, i) => <th key={i} dir="auto">{c}</th>)}</tr></thead>
+                <tbody>{detail.table.slice(1).map((row, r) => <tr key={r}>{row.map((c, i) => <td key={i} dir="auto">{c}</td>)}</tr>)}</tbody>
+              </table>
+            </div>
+          )}
+          <div className="card">
+            <h3>أخطاء شائعة</h3>
+            {detail.mistakes.map(([wrong, right, why]) => (
+              <div key={wrong} className="example">
+                <p dir="auto">❌ <s>{wrong}</s></p>
+                <p dir="auto">✅ <b>{right}</b></p>
+                <small className="muted"><Mixed text={why} /></small>
+              </div>
+            ))}
+          </div>
+          <div className="card" dir="ltr">
+            <h3>In English</h3>
+            <ol className="rules">{detail.en.map((r) => <li key={r}>{r}</li>)}</ol>
+          </div>
           <div className="card">
             <h3>أمثلة</h3>
             {lesson.examples.map(([en, ar]) => (

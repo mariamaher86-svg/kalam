@@ -14,7 +14,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 syste
 main { max-width: 640px; margin: auto; padding: 16px 16px calc(84px + env(safe-area-inset-bottom)); }
 h1 { font-size: 26px; margin: 8px 0; } h2 { font-size: 18px; margin: 22px 0 8px; } h3 { margin: 0 0 6px; font-size: 15px; color: var(--brand); }
 p { margin: 6px 0; } a { color: var(--brand); } small { font-size: 13px; }
-.ltr { text-align: left; } .en { unicode-bidi: isolate; } .muted { color: var(--muted); }
+.ltr { text-align: left; } .en { display: inline-block; unicode-bidi: isolate; } .muted { color: var(--muted); }
 .badtext { color: var(--bad); } .good-note { color: var(--good); font-weight: 600; }
 .card { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 10px 0; }
 .link { color: inherit; text-decoration: none; }
@@ -39,6 +39,8 @@ textarea { margin: 6px 0; resize: vertical; }
 .star { border: 0; background: none; padding: 4px; font-size: 20px; flex: none; }
 .sentence { display: flex; align-items: center; justify-content: space-between; gap: 10px; } .sentence.later { opacity: .65; }
 .example { padding: 6px 0; border-bottom: 1px solid var(--line); } .example:last-child { border-bottom: 0; } .card.example { border-bottom: 1px solid var(--line); padding: 10px 14px; }
+.rules { margin: 0; padding-inline-start: 22px; } .rules li { margin: 8px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; } th, td { border: 1px solid var(--line); padding: 6px; overflow-wrap: anywhere; } th { background: var(--tint); }
 .prompt { font-size: 19px; font-weight: 600; }
 .options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; } .options button { text-align: left; }
 .options .good { background: var(--good-bg); border-color: var(--good); } .options .bad { background: var(--bad-bg); border-color: var(--bad); }
