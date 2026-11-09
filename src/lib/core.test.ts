@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, checkAnswer, findWords, grade, matchPct, normalize, parseImport, streak } from './core';
+import { addDays, checkAnswer, findWords, grade, matchPct, pickReview, normalize, parseImport, streak } from './core';
 import { prompts, situations } from '../content/speaking';
 import { details } from '../content/details';
 import { lessons } from '../content/grammar';
@@ -22,12 +22,23 @@ describe('checkAnswer', () => {
 });
 
 describe('spaced repetition', () => {
-  it('moves up on success and resets on failure', () => {
-    const a = grade(undefined, true, '2026-01-30');
-    expect(a).toEqual({ box: 0, due: '2026-01-31' });
-    const b = grade(a, true, '2026-01-31');
-    expect(b).toEqual({ box: 1, due: '2026-02-02' });
-    expect(grade(b, false, '2026-02-02').box).toBe(0);
+  it('sends right answers further away and makes wrong ones due again now', () => {
+    // a card just added to review starts in box 0, due today
+    const added = { box: 0, due: '2026-01-30' };
+    const a = grade(added, true, '2026-01-30');
+    expect(a).toEqual({ box: 1, due: '2026-02-02' });
+    const b = grade(a, true, '2026-02-02');
+    expect(b).toEqual({ box: 2, due: '2026-02-09' });
+    expect(grade(b, false, '2026-02-09')).toEqual({ box: 0, due: '2026-02-09' });
+  });
+  it('builds a session from due items first, then other learned items', () => {
+    const items = ['a', 'b', 'c', 'd'].map((id) => ({ id }));
+    const cards = { a: { box: 0, due: '2026-01-01' }, b: { box: 2, due: '2026-03-01' }, c: { box: 1, due: '2026-01-02' } };
+    const s = pickReview(items, cards, '2026-01-02', 50).map((x) => x.id);
+    expect(s.slice(0, 2).sort()).toEqual(['a', 'c']);
+    expect(s).toEqual(expect.arrayContaining(['a', 'b', 'c']));
+    expect(s).not.toContain('d');
+    expect(pickReview(items, cards, '2026-01-02', 1)).toHaveLength(1);
   });
 });
 

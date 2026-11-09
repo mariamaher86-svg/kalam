@@ -1,8 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
-import { dayStr, findWords, parseImport, shuffle } from '../lib/core';
+import { dayStr, findWords, parseImport, pickReview } from '../lib/core';
+import type { Question } from '../lib/questions';
 import { addToReview, allSentences, allWords, dueCards, gradeCard, learnWords, reachedLessons, update, useStore } from '../lib/store';
 import { sentenceGroups } from '../content/sentences';
-import { En, Say } from './Quiz';
+import { En, Quiz, Say } from './Quiz';
 
 export function WordsPage() {
   const s = useStore();
@@ -77,49 +78,66 @@ export function WordsPage() {
   );
 }
 
+const SIZES = [20, 50, 100];
+
 export function ReviewPage() {
   const s = useStore();
-  // fixed for the session, so grading a card doesn't reshuffle the deck
-  const [deck] = useState(() => shuffle(dueCards(s)));
-  const [i, setI] = useState(0);
-  const [shown, setShown] = useState(false);
-  const [forgot, setForgot] = useState(0);
-  const card = deck[i];
+  const [size, setSize] = useState(50);
+  const [qs, setQs] = useState<Question[] | null>(null);
+  const [done, setDone] = useState<{ right: number; total: number } | null>(null);
+  const items = [...allWords(s), ...allSentences(s)];
+  const learned = items.filter((x) => s.cards[x.id]).length;
+  const due = dueCards(s).length;
 
-  if (!card) {
+  const start = () => {
+    // words that share an Arabic meaning (arrive / reach) are all accepted for it
+    const byMeaning = new Map<string, string[]>();
+    for (const x of items) byMeaning.set(x.ar, [...(byMeaning.get(x.ar) ?? []), x.en]);
+    const picked = pickReview(items, s.cards, dayStr(), size);
+    setQs(picked.map((x) => ({ kind: 'write', lesson: x.id, prompt: x.ar, answer: [x.en, ...byMeaning.get(x.ar)!.filter((e) => e !== x.en)].join('|') })));
+    setDone(null);
+  };
+
+  if (qs && !done) {
     return (
       <>
         <h1>المراجعة</h1>
-        <div className="card center">
-          {deck.length ? <p>خلصتي {deck.length} ✅ — نسيتي {forgot}، وهيرجعوا بكره.</p> : <p>مفيش حاجة عليها الدور دلوقتي 👌</p>}
-          <a className="btn primary" href="#/words">كلمات جديدة</a>
-        </div>
+        <Quiz
+          questions={qs}
+          onAnswer={(r) => gradeCard(r.lesson, r.right)}
+          onDone={(r) => setDone({ right: r.filter((x) => x.right).length, total: r.length })}
+        />
       </>
     );
   }
-  const answer = (ok: boolean) => {
-    gradeCard(card.id, ok);
-    if (!ok) setForgot(forgot + 1);
-    setShown(false);
-    setI(i + 1);
-  };
   return (
     <>
       <h1>المراجعة</h1>
-      <p className="muted">{i + 1} / {deck.length}</p>
+      {done && (
+        <div className="card center">
+          <h2 dir="ltr">{done.right} / {done.total}</h2>
+          <p>{done.right === done.total ? 'كله صح 🎉' : `${done.total - done.right} غلط، وهيرجعوا أول المراجعة الجاية.`}</p>
+          <small className="muted">اللي جاوبتيه صح بيغيب أكتر كل مرة: 3 أيام، وبعدين أسبوع، وبعدين أسبوعين، لحد شهرين.</small>
+        </div>
+      )}
       <div className="card center">
-        <p className="prompt">{card.ar}</p>
-        {shown ? (
+        {learned ? (
           <>
-            <p className="prompt" dir="ltr">{card.en} <Say text={card.en} /></p>
-            <p className="muted">قوليها بصوت عالي، وبعدين:</p>
-            <div className="actions">
-              <button className="badbtn" onClick={() => answer(false)}>نسيتها</button>
-              <button className="primary" onClick={() => answer(true)}>فاكراها</button>
+            <p>عليها الدور: <b>{due}</b> من {learned} حاجة بتحفظيها.</p>
+            <p className="muted">هتشوفي المعنى بالعربي وتكتبيه بالإنجليزي، وأنا أصحح.</p>
+            <div className="row">
+              <span>عدد الأسئلة</span>
+              <select value={size} onChange={(e) => setSize(Number(e.target.value))}>
+                {SIZES.map((n) => <option key={n}>{n}</option>)}
+              </select>
             </div>
+            <button className="primary" onClick={start}>{done ? 'مراجعة تانية' : 'ابدئي المراجعة'}</button>
           </>
         ) : (
-          <button className="primary" onClick={() => setShown(true)}>فكري فيها، وبعدين اضغطي</button>
+          <>
+            <p>لسه مفيش حاجة بتحفظيها.</p>
+            <a className="btn primary" href="#/words">ابدئي بكلمات النهارده</a>
+          </>
         )}
       </div>
     </>

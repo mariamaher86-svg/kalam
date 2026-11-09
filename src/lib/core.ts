@@ -49,7 +49,8 @@ export function findWords<T extends { en: string }>(list: T[], text: string): T[
 }
 
 export type Card = { box: number; due: string };
-const INTERVALS = [1, 2, 4, 7, 15, 30];
+/** days until a card comes back, by box */
+export const INTERVALS = [1, 3, 7, 14, 30, 60];
 
 export function dayStr(d = new Date()): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -59,10 +60,19 @@ export function addDays(day: string, n: number): string {
   return dayStr(new Date(y, m - 1, d + n));
 }
 
-/** Spaced repetition: remembered moves the card up a box, forgotten sends it back to tomorrow. */
+/** Spaced repetition: a right answer moves the card up a box and away for longer; a wrong one makes it due again now. */
 export function grade(card: Card | undefined, remembered: boolean, today: string): Card {
-  const box = remembered ? Math.min((card?.box ?? -1) + 1, INTERVALS.length - 1) : 0;
+  if (!remembered) return { box: 0, due: today };
+  const box = Math.min((card?.box ?? -1) + 1, INTERVALS.length - 1);
   return { box, due: addDays(today, INTERVALS[box]) };
+}
+
+/** A review session: everything due comes first, then other learned items fill it up, all shuffled. */
+export function pickReview<T extends { id: string }>(items: T[], cards: Record<string, Card>, today: string, size: number): T[] {
+  const learned = items.filter((x) => cards[x.id]);
+  const due = shuffle(learned.filter((x) => cards[x.id].due <= today));
+  const rest = shuffle(learned.filter((x) => cards[x.id].due > today));
+  return [...due, ...rest].slice(0, size);
 }
 
 export function streak(days: string[], today: string): number {

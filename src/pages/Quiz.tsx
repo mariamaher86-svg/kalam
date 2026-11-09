@@ -17,7 +17,7 @@ export const Say =({ text }: { text: string }) => (
 export type Result = { lesson: string; right: boolean };
 
 /** Runs a list of questions one by one with instant feedback. */
-export function Quiz({ questions, onDone }: { questions: Question[]; onDone: (r: Result[]) => void }) {
+export function Quiz({ questions, onDone, onAnswer }: { questions: Question[]; onDone: (r: Result[]) => void; onAnswer?: (r: Result) => void }) {
   const [i, setI] = useState(0);
   const [results, setResults] = useState<Result[]>([]);
   const [text, setText] = useState('');
@@ -26,7 +26,16 @@ export function Quiz({ questions, onDone }: { questions: Question[]; onDone: (r:
   const q = questions[i];
   const answered = picked !== null || check !== null;
 
-  const record = (right: boolean) => setResults([...results, { lesson: q.lesson, right }]);
+  const record = (right: boolean) => {
+    setResults([...results, { lesson: q.lesson, right }]);
+    // saved per answer, so leaving halfway keeps what was answered
+    onAnswer?.({ lesson: q.lesson, right });
+  };
+  const submit = (typed: string) => {
+    const c = checkAnswer(typed, q.answer);
+    setCheck(c);
+    record(c.result !== 'wrong');
+  };
   const next = () => {
     setPicked(null);
     setCheck(null);
@@ -86,17 +95,10 @@ export function Quiz({ questions, onDone }: { questions: Question[]; onDone: (r:
             placeholder="Type in English..."
           />
           {!answered && (
-            <button
-              className="primary"
-              disabled={!text.trim()}
-              onClick={() => {
-                const c = checkAnswer(text, q.answer);
-                setCheck(c);
-                record(c.result !== 'wrong');
-              }}
-            >
-              صححي
-            </button>
+            <div className="actions">
+              <button className="primary" disabled={!text.trim()} onClick={() => submit(text)}>صححي</button>
+              <button onClick={() => submit('')}>مش عارفاها</button>
+            </div>
           )}
           {check && (
             <div className={`feedback ${check.result}`}>
