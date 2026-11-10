@@ -41,6 +41,8 @@ export function Quiz({ questions, onDone, onAnswer, help = true }: { questions: 
   const [results, setResults] = useState<Result[]>([]);
   const [text, setText] = useState('');
   const [picked, setPicked] = useState<string | null>(null);
+  // a tapped option is only a choice until she confirms it
+  const [selected, setSelected] = useState<string | null>(null);
   const [check, setCheck] = useState<Check | null>(null);
   const q = questions[i];
   const answered = picked !== null || check !== null;
@@ -57,6 +59,7 @@ export function Quiz({ questions, onDone, onAnswer, help = true }: { questions: 
   };
   const next = () => {
     setPicked(null);
+    setSelected(null);
     setCheck(null);
     setText('');
     if (i + 1 === questions.length) onDone(results);
@@ -76,16 +79,25 @@ export function Quiz({ questions, onDone, onAnswer, help = true }: { questions: 
                 key={o}
                 dir="ltr"
                 disabled={answered}
-                className={answered ? (o === q.answer ? 'good' : o === picked ? 'bad' : '') : ''}
-                onClick={() => {
-                  setPicked(o);
-                  record(o === q.answer);
-                }}
+                className={answered ? (o === q.answer ? 'good' : o === picked ? 'bad' : '') : o === selected ? 'chosen' : ''}
+                onClick={() => setSelected(o)}
               >
                 {o}
               </button>
             ))}
           </div>
+          {!answered && (
+            <button
+              className="primary"
+              disabled={!selected}
+              onClick={() => {
+                setPicked(selected);
+                record(selected === q.answer);
+              }}
+            >
+              صححي
+            </button>
+          )}
         </>
       ) : (
         <>
