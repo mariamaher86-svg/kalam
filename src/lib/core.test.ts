@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { addDays, checkAnswer, findWords, grade, matchPct, pickReview, normalize, parseImport, streak } from './core';
 import { prompts, situations } from '../content/speaking';
 import { details } from '../content/details';
+import { lookup } from './lookup';
 import { lessons } from '../content/grammar';
 import { sentences } from '../content/sentences';
 import { plan } from '../content/plan';
@@ -48,6 +49,17 @@ describe('findWords', () => {
     expect(findWords(words, 'pull   request')).toHaveLength(1);
     expect(findWords(words, 'zzzz')).toHaveLength(0);
     expect(findWords(words, '  ')).toHaveLength(0);
+  });
+});
+
+describe('lookup', () => {
+  it('translates a tapped word either way, forgiving prefixes and endings', () => {
+    expect(lookup('مكتبي.')).toContain('office');
+    expect(lookup('والشركة')).toContain('company');
+    expect(lookup('people')).toContain('ناس');
+    expect(lookup('Working,')).toContain('شغل');
+    expect(lookup('cities')).toContain('مدينة');
+    expect(lookup('zzzz')).toEqual([]);
   });
 });
 

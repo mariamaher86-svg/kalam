@@ -104,6 +104,7 @@ export function ReviewPage() {
         <h1>المراجعة</h1>
         <Quiz
           questions={qs}
+          help={false}
           onAnswer={(r) => gradeCard(r.lesson, r.right)}
           onDone={(r) => setDone({ right: r.filter((x) => x.right).length, total: r.length })}
         />

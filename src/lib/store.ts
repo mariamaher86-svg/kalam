@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { dayStr, grade, type Card } from './core';
 import { lessons } from '../content/grammar';
+import { plan, type PlanDay } from '../content/plan';
 import { sentences, type Sentence } from '../content/sentences';
 import { words, type Word } from '../content/vocab';
 
@@ -83,6 +84,11 @@ export function currentIndex(s: State): number {
   const i = lessons.findIndex((l) => (s.lessons[l.id]?.best ?? 0) < PASS);
   return i < 0 ? lessons.length - 1 : i;
 }
+/** A plan day is done when she ticks it, or when every lesson in it is passed. */
+export const planDayDone = (s: State, d: PlanDay) => s.planDone.includes(d.day) || (d.lessons.length > 0 && d.lessons.every((id) => (s.lessons[id]?.best ?? 0) >= PASS));
+/** The plan moves with her progress, not the calendar: the first day not yet done. */
+export const currentPlanDay = (s: State) => (plan.find((d) => !planDayDone(s, d)) ?? plan[plan.length - 1]).day;
+
 export const reachedLessons = (s: State) => lessons.slice(0, currentIndex(s) + 1);
 
 export function dueCards(s: State): { id: string; en: string; ar: string }[] {

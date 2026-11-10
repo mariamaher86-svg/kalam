@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { distance, dayStr, normalize } from '../lib/core';
 import { examSet, writingSet, type Question } from '../lib/questions';
 import { canListen, listen, speak } from '../lib/speech';
-import { allWords, recordAnswers, update, useStore, type Intro } from '../lib/store';
+import { allWords, currentPlanDay, planDayDone, recordAnswers, update, useStore, type Intro } from '../lib/store';
 import { lessonById } from '../content/grammar';
 import { plan } from '../content/plan';
-import { planDay } from './main';
 import { En, Mixed, Quiz, Say, type Result } from './Quiz';
 
 export function WritingPage() {
@@ -83,19 +82,19 @@ export function ExamPage() {
 
 export function PlanPage() {
   const s = useStore();
-  const today = planDay(s.planStart);
+  const today = currentPlanDay(s);
   const toggle = (d: number) => update((st) => ({ planDone: st.planDone.includes(d) ? st.planDone.filter((x) => x !== d) : [...st.planDone, d] }));
   return (
     <>
       <h1>خطة الأسبوعين</h1>
       <p className="muted">45 دقيقة كل يوم. الهدف: بعد 14 يوم تعرّفي نفسك بالإنجليزي بثقة.</p>
       <div className="card"><b>كل يوم:</b> الدرس (15 دقيقة) ← 5 كلمات (5) ← المراجعة (5) ← ترجمة (10) ← كلام بصوت عالي (10).</div>
-      <button className="wide" onClick={() => update(() => ({ planStart: dayStr(), planDone: [] }))}>ابدئي الخطة من النهارده</button>
+      <p className="muted">اليوم بيتعلّم لوحده لما تعدي دروسه، وتقدري تعلّميه بنفسك كمان. ومش لازم تستني يوم كامل عشان تبدأي اللي بعده.</p>
       {plan.map((d) => (
         <div key={d.day} className={`card ${d.day === today ? 'current' : ''}`}>
           <div className="row">
             <b>يوم {d.day}: {d.goal}</b>
-            <input type="checkbox" aria-label={`خلصت يوم ${d.day}`} checked={s.planDone.includes(d.day)} onChange={() => toggle(d.day)} />
+            <input type="checkbox" aria-label={`خلصت يوم ${d.day}`} checked={planDayDone(s, d)} onChange={() => toggle(d.day)} />
           </div>
           {d.lessons.map((id) => <p key={id}><a href={`#/lesson/${id}`}><En>{lessonById(id)?.title}</En></a></p>)}
           {!d.lessons.length && <p><a href="#/exam">امتحان عشوائي</a> · <a href="#/intro">عرّفي نفسك</a></p>}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { checkAnswer, type Check } from '../lib/core';
+import { lookup } from '../lib/lookup';
 import { speak } from '../lib/speech';
 import type { Question } from '../lib/questions';
 
@@ -14,10 +15,28 @@ export const Say =({ text }: { text: string }) => (
   <button className="say" aria-label="اسمعي" onClick={() => speak(text)}>🔊</button>
 );
 
+/** Text whose words can be tapped to see their meaning in the other language. */
+export function TapText({ text }: { text: string }) {
+  const [picked, setPicked] = useState<string | null>(null);
+  const meanings = picked ? lookup(picked) : [];
+  return (
+    <>
+      <span dir="auto">
+        {text.split(/(\s+)/).map((part, i) => (part.trim() ? <span key={i} className={`tap ${part === picked ? 'on' : ''}`} onClick={() => setPicked(part === picked ? null : part)}>{part}</span> : part))}
+      </span>
+      {picked && (
+        <span className="bubble" dir="auto">
+          <b>{picked.replace(/[.,!?؟،:"]/g, '')}</b>: {meanings.length ? meanings.join(' / ') : 'مش لاقية الكلمة دي في القاموس'}
+        </span>
+      )}
+    </>
+  );
+}
+
 export type Result = { lesson: string; right: boolean };
 
 /** Runs a list of questions one by one with instant feedback. */
-export function Quiz({ questions, onDone, onAnswer }: { questions: Question[]; onDone: (r: Result[]) => void; onAnswer?: (r: Result) => void }) {
+export function Quiz({ questions, onDone, onAnswer, help = true }: { questions: Question[]; onDone: (r: Result[]) => void; onAnswer?: (r: Result) => void; help?: boolean }) {
   const [i, setI] = useState(0);
   const [results, setResults] = useState<Result[]>([]);
   const [text, setText] = useState('');
@@ -50,7 +69,7 @@ export function Quiz({ questions, onDone, onAnswer }: { questions: Question[]; o
       <p className="muted">{i + 1} / {questions.length}</p>
       {q.kind === 'choice' ? (
         <>
-          <p className="prompt" dir="auto">{q.prompt}</p>
+          <p className="prompt" dir="auto">{help ? <TapText key={q.prompt} text={q.prompt} /> : q.prompt}</p>
           <div className="options">
             {q.options.map((o) => (
               <button
@@ -72,8 +91,8 @@ export function Quiz({ questions, onDone, onAnswer }: { questions: Question[]; o
         <>
           {q.kind === 'write' ? (
             <>
-              <p className="muted">اكتبي بالإنجليزي:</p>
-              <p className="prompt">{q.prompt}</p>
+              <p className="muted">اكتبي بالإنجليزي:{help && ' (دوسي على أي كلمة عشان تعرفي معناها)'}</p>
+              <p className="prompt">{help ? <TapText key={q.prompt} text={q.prompt} /> : q.prompt}</p>
             </>
           ) : (
             <>
@@ -107,7 +126,7 @@ export function Quiz({ questions, onDone, onAnswer }: { questions: Question[]; o
                 {check.result === 'right' ? check.best : check.diff.map((d, n) => <span key={n} className={d.ok ? '' : 'miss'}>{d.word} </span>)}
                 <Say text={check.best} />
               </p>
-              {check.result !== 'right' && <small>الكلمات المعلّمة هي اللي ناقصة أو غلط عندك.</small>}
+              {check.result !== 'right' && <small>{check.diff.every((d) => d.ok) ? 'كل الكلمات دي موجودة عندك، بس الترتيب مختلف أو فيه كلمات زيادة.' : 'الكلمات المعلّمة هي اللي ناقصة أو غلط عندك.'}</small>}
             </div>
           )}
         </>

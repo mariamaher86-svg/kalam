@@ -1,5 +1,5 @@
 // Work, software and stronger vocabulary for meetings and interviews. One "english|عربي" per line.
-export const wordsWork = `office work|مكتب
+export const wordsWork = `office|مكتب
 department|قسم
 employee|موظف
 employer|صاحب العمل

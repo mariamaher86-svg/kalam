@@ -1,15 +1,9 @@
 import { useRef, useState } from 'react';
-import { addDays, dayStr, streak } from '../lib/core';
-import { allSentences, allWords, currentIndex, dueCards, exportBackup, importBackup, PASS, update, useStore, weakLessons } from '../lib/store';
+import { dayStr, streak } from '../lib/core';
+import { allSentences, allWords, currentIndex, currentPlanDay, planDayDone, dueCards, exportBackup, importBackup, PASS, update, useStore, weakLessons } from '../lib/store';
 import { lessons } from '../content/grammar';
 import { plan } from '../content/plan';
 import { En, Mixed } from './Quiz';
-
-export function planDay(start: string) {
-  const today = dayStr();
-  for (let d = 0; d < plan.length; d++) if (addDays(start, d) === today) return d + 1;
-  return today < start ? 1 : plan.length;
-}
 
 export function Home() {
   const s = useStore();
@@ -17,7 +11,7 @@ export function Home() {
   const lesson = lessons[currentIndex(s)];
   const due = dueCards(s).length;
   const learned = s.learnedByDay[today] ?? 0;
-  const day = plan[planDay(s.planStart) - 1];
+  const day = plan[currentPlanDay(s) - 1];
   return (
     <>
       <h1>كلام <En>Kalam</En></h1>
@@ -76,7 +70,7 @@ export function Progress() {
     ['جمل بتحفظيها', `${ids(allSentences(s))} / ${allSentences(s).length}`],
     ['ثبتت في الذاكرة', mastered],
     ['أيام ورا بعض', streak(s.activeDays, dayStr())],
-    ['أيام الخطة', `${s.planDone.length} / 14`],
+    ['أيام الخطة', `${plan.filter((d) => planDayDone(s, d)).length} / 14`],
     ['مرات الكلام', s.spoken],
     ['آخر امتحان', s.exams.length ? `${s.exams[s.exams.length - 1].score}%` : '—'],
   ];

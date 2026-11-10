@@ -42,6 +42,9 @@ textarea { margin: 6px 0; resize: vertical; }
 .rules { margin: 0; padding-inline-start: 22px; } .rules li { margin: 8px 0; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; } th, td { border: 1px solid var(--line); padding: 6px; overflow-wrap: anywhere; } th { background: var(--tint); }
 .prompt { font-size: 19px; font-weight: 600; }
+.tap { cursor: pointer; border-bottom: 1px dotted var(--muted); } .tap.on { color: var(--brand); border-bottom-color: var(--brand); }
+.bubble { display: block; margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: var(--tint); font-size: 15px; font-weight: 400; }
+textarea:disabled { opacity: 1; color: var(--muted); }
 .options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; } .options button { text-align: left; }
 .options .good { background: var(--good-bg); border-color: var(--good); } .options .bad { background: var(--bad-bg); border-color: var(--bad); }
 .feedback { border-radius: 10px; padding: 10px; margin: 10px 0; } .feedback.right { background: var(--good-bg); } .feedback.close { background: var(--warn-bg); } .feedback.wrong { background: var(--bad-bg); }
