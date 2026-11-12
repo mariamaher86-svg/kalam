@@ -63,6 +63,26 @@ describe('lookup', () => {
   });
 });
 
+describe('tap-to-translate coverage', () => {
+  it('knows every word used in questions, sentences and dialogues', () => {
+    const texts: string[] = [];
+    for (const l of lessons) {
+      for (const q of l.quiz) texts.push(...q);
+      for (const [ar, en] of l.write) texts.push(ar, ...en.split('|'));
+      for (const [en, ar] of l.examples) texts.push(en, ar);
+    }
+    for (const s of sentences) texts.push(s.en, s.ar);
+    for (const p of prompts) texts.push(p[0], p[1]);
+    for (const s of situations) for (const [, en, ar] of s.lines) texts.push(en, ar);
+    const missing = new Set<string>();
+    for (const t of texts) for (const raw of t.split(/\s+/)) {
+      const w = raw.replace(/[.,!?؟،:"()…→]/g, '');
+      if (w && !/\d/.test(w) && !w.includes('___') && !lookup(w).length) missing.add(w);
+    }
+    expect([...missing]).toEqual([]);
+  });
+});
+
 describe('helpers', () => {
   it('counts a streak that may end yesterday', () => {
     expect(streak(['2026-03-01', '2026-03-02'], '2026-03-03')).toBe(2);

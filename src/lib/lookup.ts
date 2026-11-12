@@ -1,3 +1,4 @@
+import { glossAr, glossEn } from '../content/glossary';
 import { words } from '../content/vocab';
 
 // Tap-to-translate: finds a word in the vocabulary in either language, forgiving common prefixes and endings.
@@ -22,6 +23,15 @@ for (const w of words) {
     if (tokens.length === 1) push(arExact, tokens[0], w.en);
     else for (const t of tokens) if (t.length > 2) push(arLoose, t, w.en);
   }
+}
+
+for (const line of glossEn.split(/\r?\n/)) {
+  const [en, ar] = line.split('|');
+  push(enIndex, en.toLowerCase(), ar);
+}
+for (const line of glossAr.split(/\r?\n/)) {
+  const [ar, en] = line.split('|');
+  push(arExact, normAr(ar), en);
 }
 
 const AR_PREFIXES = ['وال', 'بال', 'فال', 'كال', 'لل', 'ال', 'و', 'ب', 'ل', 'ف'];
